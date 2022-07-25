@@ -2,25 +2,26 @@ package com.rootlab.simpleboard.controller;
 
 import com.rootlab.simpleboard.model.Board;
 import com.rootlab.simpleboard.repository.BoardRepository;
+import com.rootlab.simpleboard.service.BoardService;
 import com.rootlab.simpleboard.validator.BoardValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
-
-import static java.lang.Math.max;
 
 @Controller
 @RequestMapping(value = "/board")
 public class BoardController {
+	@Autowired
+	private BoardService boardService;
+
 	@Autowired
 	private BoardRepository boardRepository;
 
@@ -54,13 +55,14 @@ public class BoardController {
 	}
 
 	@PostMapping("/form")
-	public String formSubmit(@Valid Board board, BindingResult bindingResult) {
+	public String formSubmit(@Valid Board board, BindingResult bindingResult, Authentication auth) {
 		boardValidator.validate(board, bindingResult);
 		if (bindingResult.hasErrors()) {
 			return "board/form";
 		}
-		System.out.println(board.getId());
-		boardRepository.save(board);
+		String username = auth.getName();
+		boardService.save(username, board);
+//		boardRepository.save(board);
 		return "redirect:/board/list";
 	}
 }
