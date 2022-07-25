@@ -4,11 +4,13 @@ package com.rootlab.simpleboard.controller;
 import com.rootlab.simpleboard.model.Board;
 import com.rootlab.simpleboard.model.User;
 import com.rootlab.simpleboard.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class UserApiController {
@@ -17,7 +19,14 @@ public class UserApiController {
 
 	@GetMapping("/users")
 	List<User> all() {
-		return userRepository.findAll();
+		// User model의 boards 멤버가 fetch = FetchType.EAGER로 설정된 경우
+		// user 정보를 가져오는 1개의 쿼리 + n개의 board 정보를 가져오는 n개의 쿼리문
+		// FetchType.LAZY로 설정하면 user정보를 가져오는 1개의 쿼리만 실행
+		List<User> users = userRepository.findAll();
+		log.debug("getBoards().size() 호출전");
+		log.debug("getBoards().size() : {}", users.get(0).getBoards().size());
+		log.debug("getBoards().size() 호출후");
+		return users;
 	}
 
 	@PostMapping("/users")
@@ -36,7 +45,7 @@ public class UserApiController {
 				.map(user -> {
 					user.getBoards().clear();
 					user.getBoards().addAll(newUser.getBoards());
-					for(Board board : user.getBoards()) {
+					for (Board board : user.getBoards()) {
 						board.setUser(user);
 					}
 					return userRepository.save(user);
