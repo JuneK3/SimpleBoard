@@ -3,6 +3,7 @@ package com.rootlab.simpleboard.controller;
 import com.rootlab.simpleboard.model.Board;
 import com.rootlab.simpleboard.repository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.thymeleaf.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,9 +49,9 @@ public class BoardApiController {
 				});
 	}
 
+	@Secured("ROLE_ADMIN")
 	@DeleteMapping("/boards/{id}")
 	void deleteBoard(@PathVariable Long id) {
 		boardRepository.deleteById(id);
 	}
-
 }
