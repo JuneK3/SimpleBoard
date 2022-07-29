@@ -1,7 +1,9 @@
 package com.rootlab.simpleboard.controller;
 
 
+import com.querydsl.core.types.Predicate;
 import com.rootlab.simpleboard.model.Board;
+import com.rootlab.simpleboard.model.QUser;
 import com.rootlab.simpleboard.model.User;
 import com.rootlab.simpleboard.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +20,36 @@ public class UserApiController {
 	private UserRepository userRepository;
 
 	@GetMapping("/users")
-	List<User> all() {
+	Iterable<User> all(@RequestParam(required = false) String method,
+					   @RequestParam(required = false) String text) {
 		// User model의 boards 멤버가 fetch = FetchType.EAGER로 설정된 경우
 		// user 정보를 가져오는 1개의 쿼리 + n개의 board 정보를 가져오는 n개의 쿼리문
 		// FetchType.LAZY로 설정하면 user정보를 가져오는 1개의 쿼리만 실행
-		List<User> users = userRepository.findAll();
-		log.debug("getBoards().size() 호출전");
-		log.debug("getBoards().size() : {}", users.get(0).getBoards().size());
-		log.debug("getBoards().size() 호출후");
+//		List<User> users = userRepository.findAll();
+//		log.debug("getBoards().size() 호출전");
+//		log.debug("getBoards().size() : {}", users.get(0).getBoards().size());
+//		log.debug("getBoards().size() 호출후");
+//		return users;
+
+		Iterable<User> users = null;
+		if ("query".equals(method)) {
+			log.debug("query");
+			users = userRepository.findByUsernameQuery(text);
+		} else if ("nativeQuery".equals(method)) {
+			log.debug("native query");
+			users = userRepository.findByUsernameNativeQuery(text);
+		} else if ("querydsl".equals(method)) {
+			log.debug("querydsl");
+			QUser user = QUser.user;
+			Predicate predicate = user.username.contains(text);
+			users = userRepository.findAll(predicate);
+		} else if ("querydslCustom".equals(method)) {
+			users = userRepository.findByUsernameCustom(text);
+		} else if ("jdbc".equals(method)) {
+			users = userRepository.findByUsernameJDBC(text);
+		} else {
+			users = userRepository.findAll();
+		}
 		return users;
 	}
 

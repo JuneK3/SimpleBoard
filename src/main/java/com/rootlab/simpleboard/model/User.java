@@ -33,7 +33,7 @@ public class User {
 
 	// fetch = FetchType.LAZY -> 사용하는 데이터만 우선 가져오고 필요할때 따로 쿼리문 실행후 가져옴
 	// fetch = FetchType.EAGER -> 사용하지 않는 데이터라도 쿼리문을 실행해 한꺼번에 가져옴
-//	@JsonIgnore
+	@JsonIgnore
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<Board> boards = new ArrayList<>();
 }
